@@ -27,7 +27,7 @@ function fmtSigned(n) {
 }
 
 function fmtPercent(rate) {
-  return `${Math.round(rate * 1000) / 10}%`;
+  return `${(rate * 100).toFixed(1)}%`;
 }
 
 // ---------- ページ: 大会一覧 ----------
@@ -76,16 +76,16 @@ function renderRankingRow(p, tournamentNos, teamNames) {
 
   return `
     <tr>
-      <td data-label="順位">${p.rank}</td>
-      <td data-label="名前" class="cell-name">${escapeHtml(p.name)}</td>
-      <td data-label="総得点" class="${p.totalPoint >= 0 ? 'positive' : 'negative'}">${fmtSigned(p.totalPoint)}</td>
+      <td data-label="順位" class="col-rank">${p.rank}</td>
+      <td data-label="名前" class="cell-name col-name">${escapeHtml(p.name)}</td>
+      <td data-label="総得点" class="cell-total ${p.totalPoint >= 0 ? 'positive' : 'negative'}">${fmtSigned(p.totalPoint)}</td>
       <td data-label="試合数">${p.matches}</td>
-      <td data-label="平均">${fmtSigned(p.avgPoint)}</td>
       <td data-label="1着">${p.rankCounts[1]}</td>
       <td data-label="2着">${p.rankCounts[2]}</td>
       <td data-label="3着">${p.rankCounts[3]}</td>
       <td data-label="4着">${p.rankCounts[4]}</td>
       <td data-label="4着回避率">${fmtPercent(p.avoid4Rate)}</td>
+      <td data-label="最高得点" class="${p.maxPoint >= 0 ? 'positive' : 'negative'}">${fmtSigned(p.maxPoint)}</td>
       ${perTournamentCells}
     </tr>`;
 }
@@ -116,8 +116,8 @@ function renderRanking(data, query = '') {
         <table class="data-table ranking-table sticky-head">
           <thead>
             <tr>
-              <th>順位</th><th>名前</th><th>総得点</th><th>試合数</th><th>平均</th>
-              <th>1着</th><th>2着</th><th>3着</th><th>4着</th><th>4着回避率</th>
+              <th class="col-rank">順位</th><th class="col-name">名前</th><th>総得点</th><th>試合数</th>
+              <th>1着</th><th>2着</th><th>3着</th><th>4着</th><th>4着回避率</th><th>最高得点</th>
               ${tournamentHeaders}
             </tr>
           </thead>

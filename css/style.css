@@ -297,6 +297,32 @@ table.data-table.sticky-head thead th {
   box-shadow: 0 1px 0 var(--border);
 }
 
+/* 横スクロールしても「順位」「名前」列を見失わないよう左端に固定する */
+table.data-table.sticky-head .col-rank,
+table.data-table.sticky-head .col-name {
+  position: sticky;
+  z-index: 3;
+  background: var(--surface);
+}
+table.data-table.sticky-head .col-rank { left: 0; width: 40px; min-width: 40px; max-width: 40px; text-align: center; }
+table.data-table.sticky-head .col-name {
+  left: 40px;
+  width: 84px;
+  min-width: 84px;
+  max-width: 84px;
+  box-shadow: 2px 0 0 var(--border);
+}
+/* 縦横どちらにも固定される左上の角セルは一番手前に */
+table.data-table.sticky-head thead th.col-rank,
+table.data-table.sticky-head thead th.col-name {
+  z-index: 6;
+}
+
+.ranking-table .cell-name,
+.ranking-table .cell-total {
+  font-weight: 700;
+}
+
 .cell-tournament { white-space: nowrap; }
 .cell-muted { color: var(--text-muted); text-align: center; }
 
