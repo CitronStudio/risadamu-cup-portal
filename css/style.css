@@ -9,10 +9,12 @@
   --negative: #c0392b;
   --radius: 12px;
   --nav-height: 60px;
+  --topbar-height: 52px;
 }
 
+/* システム設定がダーク、かつ手動でライトを選んでいない場合 */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #15151a;
     --surface: #1e1e26;
     --text: #ececf1;
@@ -22,6 +24,18 @@
     --positive: #4ad991;
     --negative: #ff6b6b;
   }
+}
+
+/* 手動でダークを選んでいる場合（システム設定に関わらず優先） */
+:root[data-theme="dark"] {
+  --bg: #15151a;
+  --surface: #1e1e26;
+  --text: #ececf1;
+  --text-muted: #9a9aa5;
+  --border: #333340;
+  --accent: #7b96ff;
+  --positive: #4ad991;
+  --negative: #ff6b6b;
 }
 
 * { box-sizing: border-box; }
@@ -40,11 +54,14 @@ a { color: inherit; text-decoration: none; }
 header.top-bar {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
+  height: var(--topbar-height);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 14px 16px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
 }
 
 header.top-bar h1 {
@@ -53,11 +70,27 @@ header.top-bar h1 {
   letter-spacing: 0.02em;
 }
 
+.theme-toggle {
+  position: absolute;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 main#app {
   max-width: 720px;
   margin: 0 auto;
   padding: 16px 12px calc(var(--nav-height) + 24px);
-  min-height: calc(100vh - 56px);
+  min-height: calc(100vh - var(--topbar-height));
 }
 
 .page-title {
@@ -194,11 +227,37 @@ nav.bottom-nav {
 }
 
 /* ---------- table ---------- */
-.table-wrap { width: 100%; }
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 個人成績ランキングは縦にも内側スクロールする箱にする。
+   これはCSSの仕様上の制約による: overflow-xをauto等にすると
+   overflow-yも強制的にautoになり、position:stickyの基準がページ全体ではなく
+   このラッパー自身に変わってしまうため、素直に「箱の中でヘッダーを固定」する形にする。 */
+.table-wrap.scroll-box {
+  max-height: min(70vh, calc(100vh - 260px));
+  min-height: 240px;
+  overflow: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.table-wrap.scroll-box table.data-table {
+  border: none;
+  border-radius: 0;
+  /* overflow:hidden はテーブル角丸クリップ用だが position:sticky を無効化してしまうため、
+     角丸のクリップは親の .scroll-box（overflow:auto側）に任せてここは visible にする */
+  overflow: visible;
+}
 
 table.data-table {
   width: 100%;
-  border-collapse: collapse;
+  /* position:stickyはborder-collapse:collapseのセルでは効かないため separate を使う
+     （縦罫線は使っておらず border-spacing:0 なので見た目はcollapseと変わらない） */
+  border-collapse: separate;
+  border-spacing: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -216,6 +275,7 @@ table.data-table td {
 table.data-table th:nth-child(2),
 table.data-table td.cell-name {
   text-align: left;
+  white-space: nowrap;
 }
 
 table.data-table thead th {
@@ -227,6 +287,18 @@ table.data-table thead th {
 }
 
 table.data-table tbody tr:last-child td { border-bottom: none; }
+
+/* スクロールしても表のヘッダー行を見失わないよう固定する（.scroll-box内での固定） */
+table.data-table.sticky-head thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--surface);
+  box-shadow: 0 1px 0 var(--border);
+}
+
+.cell-tournament { white-space: nowrap; }
+.cell-muted { color: var(--text-muted); text-align: center; }
 
 .positive { color: var(--positive); }
 .negative { color: var(--negative); }
@@ -261,6 +333,26 @@ table.data-table tbody tr:last-child td { border-bottom: none; }
     font-size: 0.75rem;
   }
   table.match-table td { padding: 3px 2px; }
+
+  /* 個人成績ランキングだけは、幅が狭くてもカード化せずPC同様の表形式のまま保つ */
+  table.data-table.ranking-table {
+    display: table;
+    font-size: 0.7rem;
+  }
+  table.data-table.ranking-table thead { display: table-header-group; }
+  table.data-table.ranking-table tbody { display: table-row-group; }
+  table.data-table.ranking-table tr {
+    display: table-row;
+    border-bottom: none;
+    padding: 0;
+  }
+  table.data-table.ranking-table th,
+  table.data-table.ranking-table td {
+    display: table-cell;
+    padding: 5px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.data-table.ranking-table td::before { content: none; }
 }
 
 /* ---------- loading / error ---------- */

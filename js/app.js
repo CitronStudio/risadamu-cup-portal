@@ -62,7 +62,18 @@ function renderTournamentList(data) {
 }
 
 // ---------- ページ: 個人成績ランキング ----------
-function renderRankingRow(p) {
+function renderRankingRow(p, tournamentNos, teamNames) {
+  const perTournamentCells = tournamentNos
+    .map((no) => {
+      const pt = p.pointsByTournament.get(no);
+      if (pt == null) {
+        return `<td data-label="第${no}回" class="cell-tournament cell-muted">-</td>`;
+      }
+      const team = p.teamsByTournament.get(no);
+      return `<td data-label="第${no}回" class="cell-tournament ${pt >= 0 ? 'positive' : 'negative'}">${fmtSigned(pt)} ${teamBadge(team, teamNames)}</td>`;
+    })
+    .join('');
+
   return `
     <tr>
       <td data-label="順位">${p.rank}</td>
@@ -75,6 +86,7 @@ function renderRankingRow(p) {
       <td data-label="3着">${p.rankCounts[3]}</td>
       <td data-label="4着">${p.rankCounts[4]}</td>
       <td data-label="4着回避率">${fmtPercent(p.avoid4Rate)}</td>
+      ${perTournamentCells}
     </tr>`;
 }
 
@@ -84,12 +96,14 @@ function renderRanking(data, query = '') {
     ? data.career.filter((p) => p.name.includes(q))
     : data.career;
 
-  const rowsHtml = list.map(renderRankingRow).join('');
+  const tournamentNos = data.tournaments.map((t) => t.no);
+  const rowsHtml = list.map((p) => renderRankingRow(p, tournamentNos, data.teamNames)).join('');
+  const tournamentHeaders = tournamentNos.map((no) => `<th>第${no}回</th>`).join('');
 
   return `
     <section>
       <h1 class="page-title">個人成績ランキング</h1>
-      <p class="page-desc">全大会・全試合の合計ポイント順（りさだむ杯のRESULTシートより自動集計）。</p>
+      <p class="page-desc">全大会・全試合の合計ポイント順（りさだむ杯のRESULTシートより自動集計）。右へスクロールすると大会ごとの得点・所属チームも見られます。</p>
       <input
         id="ranking-search"
         class="search-box"
@@ -98,12 +112,13 @@ function renderRanking(data, query = '') {
         value="${escapeHtml(query)}"
         autocomplete="off"
       />
-      <div class="table-wrap">
-        <table class="data-table">
+      <div class="table-wrap scroll-box">
+        <table class="data-table ranking-table sticky-head">
           <thead>
             <tr>
               <th>順位</th><th>名前</th><th>総得点</th><th>試合数</th><th>平均</th>
               <th>1着</th><th>2着</th><th>3着</th><th>4着</th><th>4着回避率</th>
+              ${tournamentHeaders}
             </tr>
           </thead>
           <tbody id="ranking-tbody">${rowsHtml}</tbody>
@@ -250,12 +265,13 @@ function render() {
   if (route.page === 'ranking') {
     $app().innerHTML = renderRanking(state.data);
     document.getElementById('ranking-search').addEventListener('input', (e) => {
+      const tournamentNos = state.data.tournaments.map((t) => t.no);
       document.getElementById('ranking-tbody').innerHTML = (
         e.target.value.trim()
           ? state.data.career.filter((p) => p.name.includes(e.target.value.trim()))
           : state.data.career
       )
-        .map(renderRankingRow)
+        .map((p) => renderRankingRow(p, tournamentNos, state.data.teamNames))
         .join('');
     });
     document.getElementById('ranking-search').focus({ preventScroll: true });
