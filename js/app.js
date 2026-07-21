@@ -30,6 +30,11 @@ function fmtPercent(rate) {
   return `${(rate * 100).toFixed(1)}%`;
 }
 
+function fmtNumber(n) {
+  if (n == null || Number.isNaN(Number(n))) return '-';
+  return Number(n).toLocaleString('ja-JP');
+}
+
 // ---------- ページ: 大会一覧 ----------
 function renderTournamentList(data) {
   const rows = data.tournaments
@@ -79,13 +84,13 @@ function renderRankingRow(p, tournamentNos, teamNames) {
       <td data-label="順位" class="col-rank">${p.rank}</td>
       <td data-label="名前" class="cell-name col-name">${escapeHtml(p.name)}</td>
       <td data-label="総得点" class="cell-total ${p.totalPoint >= 0 ? 'positive' : 'negative'}">${fmtSigned(p.totalPoint)}</td>
-      <td data-label="試合数">${p.matches}</td>
+      <td data-label="試合数" class="cell-matches">${p.matches}</td>
       <td data-label="1着">${p.rankCounts[1]}</td>
       <td data-label="2着">${p.rankCounts[2]}</td>
       <td data-label="3着">${p.rankCounts[3]}</td>
       <td data-label="4着">${p.rankCounts[4]}</td>
       <td data-label="4着回避率">${fmtPercent(p.avoid4Rate)}</td>
-      <td data-label="最高得点" class="${p.maxPoint >= 0 ? 'positive' : 'negative'}">${fmtSigned(p.maxPoint)}</td>
+      <td data-label="最高得点">${fmtNumber(p.maxSoten)}</td>
       ${perTournamentCells}
     </tr>`;
 }
