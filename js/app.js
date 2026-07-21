@@ -32,7 +32,7 @@ function fmtPercent(rate) {
 
 function fmtNumber(n) {
   if (n == null || Number.isNaN(Number(n))) return '-';
-  return Number(n).toLocaleString('ja-JP');
+  return String(Number(n));
 }
 
 // ---------- ページ: 大会一覧 ----------
