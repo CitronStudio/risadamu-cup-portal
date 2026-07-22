@@ -45,9 +45,9 @@ function renderTournamentList(data) {
       return `
       <a class="card tournament-card" href="#/tournament/${t.no}">
         <div class="tournament-card-head">
+          <span class="tournament-title">${escapeHtml(t.name)}</span>
           <span class="tournament-date">${escapeHtml(t.dateText || '')}</span>
         </div>
-        <div class="tournament-title">${escapeHtml(t.name)}</div>
         <div class="tournament-meta">
           <span>優勝 ${teamBadge(champTeamCode, data.teamNames)} <span class="meta-strong">${escapeHtml(data.teamNames.get(t.championTeam) || t.championTeam || '')}</span></span>
           <span>個人優勝 <span class="meta-strong">${escapeHtml(t.individualChampion || '-')}</span> ${teamBadge(t.individualChampionTeam, data.teamNames)}</span>
