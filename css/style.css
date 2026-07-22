@@ -197,10 +197,25 @@ nav.bottom-nav {
 .match-table {
   margin: 0;
   font-size: 0.72rem;
+  table-layout: fixed;
 }
 .match-table th,
-.match-table td { padding: 4px 6px; white-space: nowrap; }
-.match-table tbody th {
+.match-table td { padding: 4px 4px; white-space: nowrap; }
+.match-table col.match-col-label { width: 15%; }
+.match-table col.match-col-rank { width: 21.25%; }
+
+/* 順位ごとの列は名前・チーム・素点・Ptすべて中央揃えに統一し、
+   行によって左右バラバラの余白ができないようにする */
+table.data-table.match-table tbody th,
+table.data-table.match-table tbody td {
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.data-table.match-table thead th {
+  text-align: center;
+}
+table.data-table.match-table tbody th {
   text-align: left;
   font-weight: 600;
   color: var(--text-muted);

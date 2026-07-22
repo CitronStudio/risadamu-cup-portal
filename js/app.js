@@ -305,6 +305,9 @@ function renderTournamentDetail(data, no) {
       <div class="match-head">第${m.matchNo % 100}試合</div>
       <div class="table-wrap">
         <table class="data-table match-table">
+          <colgroup>
+            <col class="match-col-label"><col class="match-col-rank"><col class="match-col-rank"><col class="match-col-rank"><col class="match-col-rank">
+          </colgroup>
           <thead>
             <tr><th></th>${rankHeaders}</tr>
           </thead>
