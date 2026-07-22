@@ -323,6 +323,9 @@ table.data-table thead th {
 
 table.data-table tbody tr:last-child td { border-bottom: none; }
 
+.sortable-th { cursor: pointer; user-select: none; }
+.sortable-th.active { color: var(--accent); }
+
 /* スクロールしても表のヘッダー行を見失わないよう固定する（.scroll-box内での固定） */
 table.data-table.sticky-head thead th {
   position: sticky;
@@ -406,39 +409,22 @@ table.data-table.sticky-head thead th.col-name {
     font-size: 0.75rem;
   }
 
-  /* 個人成績ランキング・大会詳細の各表は、幅が狭くてもカード化せずPC同様の表形式のまま保つ */
-  table.data-table.ranking-table,
-  table.data-table.standings-table,
-  table.data-table.match-table {
-    display: table;
-    font-size: 0.7rem;
-  }
-  table.data-table.ranking-table thead,
-  table.data-table.standings-table thead,
-  table.data-table.match-table thead { display: table-header-group; }
-  table.data-table.ranking-table tbody,
-  table.data-table.standings-table tbody,
-  table.data-table.match-table tbody { display: table-row-group; }
-  table.data-table.ranking-table tr,
-  table.data-table.standings-table tr,
-  table.data-table.match-table tr {
+  /* 個人成績ランキング・大会詳細の各表・対戦成績は、幅が狭くてもカード化せずPC同様の表形式のまま保つ */
+  table.data-table.keep-table { display: table; font-size: 0.7rem; }
+  table.data-table.keep-table thead { display: table-header-group; }
+  table.data-table.keep-table tbody { display: table-row-group; }
+  table.data-table.keep-table tr {
     display: table-row;
     border-bottom: none;
     padding: 0;
   }
-  table.data-table.ranking-table th,
-  table.data-table.ranking-table td,
-  table.data-table.standings-table th,
-  table.data-table.standings-table td,
-  table.data-table.match-table th,
-  table.data-table.match-table td {
+  table.data-table.keep-table th,
+  table.data-table.keep-table td {
     display: table-cell;
     padding: 5px 6px;
     border-bottom: 1px solid var(--border);
   }
-  table.data-table.ranking-table td::before,
-  table.data-table.standings-table td::before,
-  table.data-table.match-table td::before { content: none; }
+  table.data-table.keep-table td::before { content: none; }
 }
 
 /* ---------- loading / error ---------- */

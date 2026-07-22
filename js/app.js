@@ -3,6 +3,7 @@
 const state = {
   data: null,
   loadError: null,
+  h2hSort: { key: 'games', dir: 'desc' },
 };
 
 const $app = () => document.getElementById('app');
@@ -91,7 +92,7 @@ function renderRankingRow(p, tournamentNos, teamNames) {
         return `<td data-label="第${no}回" class="cell-tournament cell-muted">-</td>`;
       }
       const team = p.teamsByTournament.get(no);
-      return `<td data-label="第${no}回" class="cell-tournament ${pt >= 0 ? 'positive' : 'negative'}">${fmtSigned(pt)} ${teamBadge(team, teamNames)}</td>`;
+      return `<td data-label="第${no}回" class="cell-tournament ${pt >= 0 ? 'sheet-pos' : 'sheet-neg'}">${fmtSigned(pt)} ${teamBadge(team, teamNames)}</td>`;
     })
     .join('');
 
@@ -99,7 +100,7 @@ function renderRankingRow(p, tournamentNos, teamNames) {
     <tr>
       <td data-label="順位" class="col-rank">${p.rank}</td>
       <td data-label="名前" class="cell-name col-name">${escapeHtml(p.name)}</td>
-      <td data-label="総得点" class="cell-total ${p.totalPoint >= 0 ? 'positive' : 'negative'}">${fmtSigned(p.totalPoint)}</td>
+      <td data-label="総得点" class="cell-total ${p.totalPoint >= 0 ? 'sheet-pos' : 'sheet-neg'}">${fmtSigned(p.totalPoint)}</td>
       <td data-label="試合数" class="cell-matches">${p.matches}</td>
       <td data-label="1着">${p.rankCounts[1]}</td>
       <td data-label="2着">${p.rankCounts[2]}</td>
@@ -134,7 +135,7 @@ function renderRanking(data, query = '') {
         autocomplete="off"
       />
       <div class="table-wrap scroll-box">
-        <table class="data-table ranking-table sticky-head">
+        <table class="data-table ranking-table keep-table sticky-head">
           <thead>
             <tr>
               <th class="col-rank">順位</th><th class="col-name">名前</th><th>総得点</th><th>試合数</th>
@@ -158,38 +159,64 @@ function renderLive() {
 }
 
 // ---------- ページ: 対戦成績 ----------
+const H2H_SORT_COLUMNS = [
+  { key: 'opponent', label: '相手', defaultDir: 'asc' },
+  { key: 'games', label: '同卓回数', defaultDir: 'desc' },
+  { key: 'diffSum', label: '通算ポイント差', defaultDir: 'desc' },
+  { key: 'avgDiff', label: '平均ポイント差', defaultDir: 'desc' },
+];
+
+function sortH2HRecords(records, sort) {
+  const sorted = records.slice().sort((a, b) => {
+    const cmp =
+      sort.key === 'opponent' ? a.opponent.localeCompare(b.opponent, 'ja') : a[sort.key] - b[sort.key];
+    return sort.dir === 'asc' ? cmp : -cmp;
+  });
+  return sorted;
+}
+
+function renderH2HResult(data, selectedName) {
+  if (!selectedName) {
+    return '<p class="page-desc">選手を選ぶと、同卓した相手ごとの通算ポイント差が分かります。</p>';
+  }
+  const records = getOpponentRecords(data.h2h, data.allNames, selectedName);
+  if (records.length === 0) {
+    return '<p class="empty-msg">この選手の対戦記録が見つかりません。</p>';
+  }
+
+  const sorted = sortH2HRecords(records, state.h2hSort);
+  const headers = H2H_SORT_COLUMNS.map(({ key, label }) => {
+    const active = state.h2hSort.key === key;
+    const arrow = active ? (state.h2hSort.dir === 'asc' ? ' ▲' : ' ▼') : '';
+    return `<th data-sort="${key}" class="sortable-th${active ? ' active' : ''}">${label}${arrow}</th>`;
+  }).join('');
+
+  const rows = sorted
+    .map(
+      (r) => `
+        <tr>
+          <td data-label="相手" class="cell-name">${escapeHtml(r.opponent)}</td>
+          <td data-label="同卓回数">${r.games}</td>
+          <td data-label="通算ポイント差" class="${r.diffSum >= 0 ? 'sheet-pos' : 'sheet-neg'}">${fmtSigned(r.diffSum)}</td>
+          <td data-label="平均ポイント差" class="${r.avgDiff >= 0 ? 'sheet-pos' : 'sheet-neg'}">${fmtSigned(r.avgDiff)}</td>
+        </tr>`
+    )
+    .join('');
+
+  return `
+    <div class="table-wrap">
+      <table class="data-table h2h-table keep-table">
+        <thead><tr>${headers}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <p class="hint-msg">※ポイント差はプラスなら${escapeHtml(selectedName)}が相手より多く獲得したことを表します。列名タップで並び替えできます。</p>`;
+}
+
 function renderH2H(data, selectedName) {
   const options = data.allNames
     .map((n) => `<option value="${escapeHtml(n)}" ${n === selectedName ? 'selected' : ''}>${escapeHtml(n)}</option>`)
     .join('');
-
-  let resultHtml = '<p class="page-desc">選手を選ぶと、同卓した相手ごとの通算ポイント差が分かります。</p>';
-  if (selectedName) {
-    const records = getOpponentRecords(data.h2h, data.allNames, selectedName);
-    if (records.length === 0) {
-      resultHtml = '<p class="empty-msg">この選手の対戦記録が見つかりません。</p>';
-    } else {
-      const rows = records
-        .map(
-          (r) => `
-        <tr>
-          <td data-label="相手" class="cell-name">${escapeHtml(r.opponent)}</td>
-          <td data-label="同卓回数">${r.games}</td>
-          <td data-label="通算ポイント差" class="${r.diffSum >= 0 ? 'positive' : 'negative'}">${fmtSigned(r.diffSum)}</td>
-          <td data-label="平均ポイント差" class="${r.avgDiff >= 0 ? 'positive' : 'negative'}">${fmtSigned(r.avgDiff)}</td>
-        </tr>`
-        )
-        .join('');
-      resultHtml = `
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr><th>相手</th><th>同卓回数</th><th>通算ポイント差</th><th>平均ポイント差</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-        <p class="hint-msg">※ポイント差はプラスなら${escapeHtml(selectedName)}が相手より多く獲得したことを表します。</p>`;
-    }
-  }
 
   return `
     <section>
@@ -198,7 +225,7 @@ function renderH2H(data, selectedName) {
         <option value="">-- 選手を選択 --</option>
         ${options}
       </select>
-      <div id="h2h-result">${resultHtml}</div>
+      <div id="h2h-result">${renderH2HResult(data, selectedName)}</div>
     </section>`;
 }
 
@@ -222,7 +249,7 @@ function renderTeamStandings(teamStandings, teamNames) {
 
   return `
     <div class="table-wrap">
-      <table class="data-table standings-table">
+      <table class="data-table standings-table keep-table">
         <thead>
           <tr>
             <th class="col-rank">順位</th><th>チーム</th><th>合計</th><th>差</th>
@@ -268,7 +295,7 @@ function renderIndividualStandings(individualStandings, matchOrdinals, teamNames
 
   return `
     <div class="table-wrap scroll-box">
-      <table class="data-table standings-table sticky-head">
+      <table class="data-table standings-table keep-table sticky-head">
         <thead>
           <tr>
             <th class="col-rank">順位</th><th class="col-name">名前</th><th>チーム</th><th>総得点</th><th>差</th>
@@ -304,7 +331,7 @@ function renderTournamentDetail(data, no) {
     <div class="card match-card">
       <div class="match-head">第${m.matchNo % 100}試合</div>
       <div class="table-wrap">
-        <table class="data-table match-table">
+        <table class="data-table match-table keep-table">
           <colgroup>
             <col class="match-col-label"><col class="match-col-rank"><col class="match-col-rank"><col class="match-col-rank"><col class="match-col-rank">
           </colgroup>
@@ -401,10 +428,23 @@ function render() {
   } else if (route.page === 'live') {
     $app().innerHTML = renderLive();
   } else if (route.page === 'h2h') {
+    state.h2hSort = { key: 'games', dir: 'desc' };
     $app().innerHTML = renderH2H(state.data, route.name);
     document.getElementById('h2h-select').addEventListener('change', (e) => {
       const name = e.target.value;
       location.hash = name ? `/h2h/${encodeURIComponent(name)}` : '/h2h';
+    });
+    document.getElementById('h2h-result').addEventListener('click', (e) => {
+      const th = e.target.closest('th[data-sort]');
+      if (!th) return;
+      const key = th.dataset.sort;
+      if (state.h2hSort.key === key) {
+        state.h2hSort.dir = state.h2hSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        const col = H2H_SORT_COLUMNS.find((c) => c.key === key);
+        state.h2hSort = { key, dir: col.defaultDir };
+      }
+      document.getElementById('h2h-result').innerHTML = renderH2HResult(state.data, route.name);
     });
   } else if (route.page === 'tournament') {
     $app().innerHTML = renderTournamentDetail(state.data, route.no);
