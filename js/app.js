@@ -210,7 +210,7 @@ function renderTeamStandings(teamStandings, teamNames) {
     <tr>
       <td data-label="順位" class="col-rank">${t.rank}</td>
       <td data-label="チーム" class="cell-name">${teamBadge(t.teamCode, teamNames)} <span class="meta-strong">${escapeHtml(teamNames.get(t.teamCode) || t.teamCode)}</span></td>
-      <td data-label="合計">${fmtSheetPoint(t.total)}</td>
+      <td data-label="合計" class="cell-total">${fmtSheetPoint(t.total)}</td>
       <td data-label="差" class="cell-diff">${fmtDiff(t.diff)}</td>
       <td data-label="1着">${t.rankCounts[1]}</td>
       <td data-label="2着">${t.rankCounts[2]}</td>
@@ -254,7 +254,7 @@ function renderIndividualStandings(individualStandings, matchOrdinals, teamNames
       <td data-label="順位" class="col-rank">${p.rank}</td>
       <td data-label="名前" class="cell-name col-name">${escapeHtml(p.name)}</td>
       <td data-label="チーム">${teamBadge(p.teamCode, teamNames)}</td>
-      <td data-label="総得点">${fmtSheetPoint(p.total)}</td>
+      <td data-label="総得点" class="cell-total">${fmtSheetPoint(p.total)}</td>
       <td data-label="差" class="cell-diff">${fmtDiff(p.diff)}</td>
       ${matchCells}
       <td data-label="1着">${p.rankCounts[1]}</td>
@@ -291,29 +291,35 @@ function renderTournamentDetail(data, no) {
   const { teamStandings, individualStandings, matchOrdinals } = computeTournamentStandings(data.results, no);
 
   const matchesHtml = matches
-    .map(
-      (m) => `
+    .map((m) => {
+      const rankHeaders = m.players.map((p) => `<th colspan="4">${p.rank}位</th>`).join('');
+      const subHeaders = m.players.map(() => '<th>名前</th><th>チーム</th><th>素点</th><th>Pt</th>').join('');
+      const cells = m.players
+        .map(
+          (p) => `
+            <td class="cell-name">${escapeHtml(p.name)}</td>
+            <td>${teamBadge(p.teamCode, data.teamNames)}</td>
+            <td>${p.soten != null ? p.soten : '-'}</td>
+            <td>${fmtSheetPoint(p.point)}</td>`
+        )
+        .join('');
+
+      return `
     <div class="card match-card">
       <div class="match-head">第${m.matchNo % 100}試合</div>
-      <table class="data-table match-table">
-        <thead><tr><th>順位</th><th>名前</th><th>チーム</th><th>素点</th><th>ポイント</th></tr></thead>
-        <tbody>
-          ${m.players
-            .map(
-              (p) => `
-            <tr>
-              <td data-label="順位">${p.rank}</td>
-              <td data-label="名前" class="cell-name">${escapeHtml(p.name)}</td>
-              <td data-label="チーム">${teamBadge(p.teamCode, data.teamNames)}</td>
-              <td data-label="素点">${p.soten != null ? p.soten : '-'}</td>
-              <td data-label="ポイント" class="${p.point >= 0 ? 'positive' : 'negative'}">${fmtSigned(p.point)}</td>
-            </tr>`
-            )
-            .join('')}
-        </tbody>
-      </table>
-    </div>`
-    )
+      <div class="table-wrap">
+        <table class="data-table match-table">
+          <thead>
+            <tr>${rankHeaders}</tr>
+            <tr>${subHeaders}</tr>
+          </thead>
+          <tbody>
+            <tr>${cells}</tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+    })
     .join('');
 
   return `

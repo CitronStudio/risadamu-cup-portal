@@ -194,7 +194,13 @@ nav.bottom-nav {
 
 .match-card { padding: 10px 12px; }
 .match-head { font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; color: var(--text-muted); }
-.match-table { margin: 0; }
+.match-table {
+  margin: 0;
+  font-size: 0.72rem;
+}
+.match-table th,
+.match-table td { padding: 4px 6px; white-space: nowrap; }
+.match-table thead tr:first-child th { text-align: center; color: var(--accent); }
 
 .back-link {
   display: inline-block;
@@ -334,7 +340,8 @@ table.data-table.sticky-head thead th.col-name {
 .ranking-table .cell-name,
 .ranking-table .cell-total,
 .ranking-table .cell-matches,
-.standings-table .cell-name {
+.standings-table .cell-name,
+.standings-table .cell-total {
   font-weight: 700;
 }
 
@@ -379,20 +386,23 @@ table.data-table.sticky-head thead th.col-name {
     color: var(--text-muted);
     font-size: 0.75rem;
   }
-  table.match-table td { padding: 3px 2px; }
 
-  /* 個人成績ランキング・大会詳細の順位表は、幅が狭くてもカード化せずPC同様の表形式のまま保つ */
+  /* 個人成績ランキング・大会詳細の各表は、幅が狭くてもカード化せずPC同様の表形式のまま保つ */
   table.data-table.ranking-table,
-  table.data-table.standings-table {
+  table.data-table.standings-table,
+  table.data-table.match-table {
     display: table;
     font-size: 0.7rem;
   }
   table.data-table.ranking-table thead,
-  table.data-table.standings-table thead { display: table-header-group; }
+  table.data-table.standings-table thead,
+  table.data-table.match-table thead { display: table-header-group; }
   table.data-table.ranking-table tbody,
-  table.data-table.standings-table tbody { display: table-row-group; }
+  table.data-table.standings-table tbody,
+  table.data-table.match-table tbody { display: table-row-group; }
   table.data-table.ranking-table tr,
-  table.data-table.standings-table tr {
+  table.data-table.standings-table tr,
+  table.data-table.match-table tr {
     display: table-row;
     border-bottom: none;
     padding: 0;
@@ -400,13 +410,16 @@ table.data-table.sticky-head thead th.col-name {
   table.data-table.ranking-table th,
   table.data-table.ranking-table td,
   table.data-table.standings-table th,
-  table.data-table.standings-table td {
+  table.data-table.standings-table td,
+  table.data-table.match-table th,
+  table.data-table.match-table td {
     display: table-cell;
     padding: 5px 6px;
     border-bottom: 1px solid var(--border);
   }
   table.data-table.ranking-table td::before,
-  table.data-table.standings-table td::before { content: none; }
+  table.data-table.standings-table td::before,
+  table.data-table.match-table td::before { content: none; }
 }
 
 /* ---------- loading / error ---------- */
