@@ -45,13 +45,12 @@ function renderTournamentList(data) {
       return `
       <a class="card tournament-card" href="#/tournament/${t.no}">
         <div class="tournament-card-head">
-          <span class="tournament-no">第${t.no}回</span>
           <span class="tournament-date">${escapeHtml(t.dateText || '')}</span>
         </div>
         <div class="tournament-title">${escapeHtml(t.name)}</div>
         <div class="tournament-meta">
-          <span>優勝 ${teamBadge(champTeamCode, data.teamNames)} ${escapeHtml(data.teamNames.get(t.championTeam) || t.championTeam || '')}</span>
-          <span>個人優勝 ${escapeHtml(t.individualChampion || '-')} ${teamBadge(t.individualChampionTeam, data.teamNames)}</span>
+          <span>優勝 ${teamBadge(champTeamCode, data.teamNames)} <span class="meta-strong">${escapeHtml(data.teamNames.get(t.championTeam) || t.championTeam || '')}</span></span>
+          <span>個人優勝 <span class="meta-strong">${escapeHtml(t.individualChampion || '-')}</span> ${teamBadge(t.individualChampionTeam, data.teamNames)}</span>
           <span>参加 ${t.participants != null ? t.participants + '人' : '-'}</span>
         </div>
       </a>`;
