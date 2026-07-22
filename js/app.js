@@ -66,6 +66,7 @@ function renderTournamentList(data) {
         </div>
         <div class="tournament-meta">
           <span>優勝 ${teamBadge(champTeamCode, data.teamNames)} <span class="meta-strong">${escapeHtml(data.teamNames.get(t.championTeam) || t.championTeam || '')}</span></span>
+          <span>チーム順位 ${t.teamRanks.map((c) => teamBadge(c, data.teamNames)).join(' ')}</span>
           <span>個人優勝 <span class="meta-strong">${escapeHtml(t.individualChampion || '-')}</span> ${teamBadge(t.individualChampionTeam, data.teamNames)}</span>
           <span>参加 ${t.participants != null ? t.participants + '人' : '-'}</span>
         </div>
@@ -322,7 +323,6 @@ function renderTournamentDetail(data, no) {
       <p class="page-desc">${escapeHtml(t.dateText || '')} ／ 参加 ${t.participants != null ? t.participants + '人' : '-'}</p>
       <div class="tournament-summary">
         <div>優勝チーム: ${teamBadge(t.teamRanks[0], data.teamNames)} ${escapeHtml(data.teamNames.get(t.championTeam) || t.championTeam || '')}</div>
-        <div>チーム順位: ${t.teamRanks.map((c) => teamBadge(c, data.teamNames)).join(' ')}</div>
         <div>個人優勝: ${escapeHtml(t.individualChampion || '-')} ${teamBadge(t.individualChampionTeam, data.teamNames)}</div>
         ${t.note ? `<div>備考: ${escapeHtml(t.note)}</div>` : ''}
       </div>
