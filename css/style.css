@@ -307,6 +307,9 @@ table.data-table.sticky-head thead th {
   box-shadow: 0 1px 0 var(--border);
 }
 
+/* 順位列は数字だけなので幅を詰め、左に不要な余白ができないようにする */
+table.data-table .col-rank { width: 40px; min-width: 40px; max-width: 40px; text-align: center; }
+
 /* 横スクロールしても「順位」「名前」列を見失わないよう左端に固定する */
 table.data-table.sticky-head .col-rank,
 table.data-table.sticky-head .col-name {
@@ -314,7 +317,7 @@ table.data-table.sticky-head .col-name {
   z-index: 3;
   background: var(--surface);
 }
-table.data-table.sticky-head .col-rank { left: 0; width: 40px; min-width: 40px; max-width: 40px; text-align: center; }
+table.data-table.sticky-head .col-rank { left: 0; }
 table.data-table.sticky-head .col-name {
   left: 40px;
   width: 84px;
