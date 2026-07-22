@@ -243,9 +243,9 @@ function renderIndividualStandings(individualStandings, matchOrdinals, teamNames
       const matchCells = matchOrdinals
         .map((no) => {
           const m = p.byMatch.get(no);
-          if (!m) return `<td data-label="第${no}試合" class="cell-tournament cell-muted">-</td>`;
+          if (!m) return `<td data-label="${no}試合目" class="cell-tournament cell-muted">-</td>`;
           const circle = CIRCLED_RANK[m.rank] || '';
-          return `<td data-label="第${no}試合" class="cell-tournament">${fmtSheetPoint(m.point)} <span class="rank-circle">${circle}</span></td>`;
+          return `<td data-label="${no}試合目" class="cell-tournament">${fmtSheetPoint(m.point)} <span class="rank-circle">${circle}</span></td>`;
         })
         .join('');
 
