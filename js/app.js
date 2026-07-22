@@ -133,6 +133,14 @@ function renderRanking(data, query = '') {
     </section>`;
 }
 
+// ---------- ページ: 開催中 ----------
+function renderLive() {
+  return `
+    <section class="live-box">
+      <p>現在大会は開催されていません</p>
+    </section>`;
+}
+
 // ---------- ページ: 対戦成績 ----------
 function renderH2H(data, selectedName) {
   const options = data.allNames
@@ -234,6 +242,7 @@ function parseHash() {
   const parts = hash.split('/').filter(Boolean);
   if (parts.length === 0) return { page: 'home' };
   if (parts[0] === 'ranking') return { page: 'ranking' };
+  if (parts[0] === 'live') return { page: 'live' };
   if (parts[0] === 'h2h') return { page: 'h2h', name: parts[1] ? decodeURIComponent(parts[1]) : '' };
   if (parts[0] === 'tournament') return { page: 'tournament', no: Number(parts[1]) };
   return { page: 'home' };
@@ -280,6 +289,8 @@ function render() {
         .join('');
     });
     document.getElementById('ranking-search').focus({ preventScroll: true });
+  } else if (route.page === 'live') {
+    $app().innerHTML = renderLive();
   } else if (route.page === 'h2h') {
     $app().innerHTML = renderH2H(state.data, route.name);
     document.getElementById('h2h-select').addEventListener('change', (e) => {

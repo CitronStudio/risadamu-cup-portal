@@ -383,6 +383,16 @@ table.data-table.sticky-head thead th.col-name {
 }
 
 /* ---------- loading / error ---------- */
+.live-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--topbar-height) - var(--nav-height));
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
 .loading-box, .error-box {
   display: flex;
   flex-direction: column;
