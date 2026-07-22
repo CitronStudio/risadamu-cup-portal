@@ -198,8 +198,11 @@ nav.bottom-nav {
 
 /* ---------- badges ---------- */
 .badge {
-  display: inline-block;
-  padding: 1px 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  padding: 1px 0;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
@@ -207,12 +210,12 @@ nav.bottom-nav {
   vertical-align: middle;
 }
 
-.badge-DM { background: #e08e0b; }
-.badge-RI { background: #e0507a; }
-.badge-YU { background: #3b7ddb; }
-.badge-CI { background: #6aa832; }
-.badge-YS { background: #8757c9; }
-.badge-NO { background: #5a9e9e; }
+.badge-DM { background: #d2725f; }
+.badge-RI { background: #1f355d; }
+.badge-YU { background: #b19343; }
+.badge-CI { background: #517335; }
+.badge-YS { background: #905675; }
+.badge-NO { background: #6082e1; }
 
 /* ---------- search / select ---------- */
 .search-box {
