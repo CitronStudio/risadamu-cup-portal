@@ -200,7 +200,11 @@ nav.bottom-nav {
 }
 .match-table th,
 .match-table td { padding: 4px 6px; white-space: nowrap; }
-.match-table thead tr:first-child th { text-align: center; color: var(--accent); }
+.match-table tbody th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-muted);
+}
 
 .back-link {
   display: inline-block;

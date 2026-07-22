@@ -292,17 +292,13 @@ function renderTournamentDetail(data, no) {
 
   const matchesHtml = matches
     .map((m) => {
-      const rankHeaders = m.players.map((p) => `<th colspan="4">${p.rank}位</th>`).join('');
-      const subHeaders = m.players.map(() => '<th>名前</th><th>チーム</th><th>素点</th><th>Pt</th>').join('');
-      const cells = m.players
-        .map(
-          (p) => `
-            <td class="cell-name">${escapeHtml(p.name)}</td>
-            <td>${teamBadge(p.teamCode, data.teamNames)}</td>
-            <td>${p.soten != null ? p.soten : '-'}</td>
-            <td>${fmtSheetPoint(p.point)}</td>`
-        )
+      const rankHeaders = m.players.map((p) => `<th>${p.rank}位</th>`).join('');
+      const nameCells = m.players.map((p) => `<td class="cell-name">${escapeHtml(p.name)}</td>`).join('');
+      const teamCells = m.players.map((p) => `<td>${teamBadge(p.teamCode, data.teamNames)}</td>`).join('');
+      const sotenCells = m.players
+        .map((p) => `<td>${p.soten != null ? fmtNumber(p.soten * 100) : '-'}</td>`)
         .join('');
+      const pointCells = m.players.map((p) => `<td>${fmtSheetPoint(p.point)}</td>`).join('');
 
       return `
     <div class="card match-card">
@@ -310,11 +306,13 @@ function renderTournamentDetail(data, no) {
       <div class="table-wrap">
         <table class="data-table match-table">
           <thead>
-            <tr>${rankHeaders}</tr>
-            <tr>${subHeaders}</tr>
+            <tr><th></th>${rankHeaders}</tr>
           </thead>
           <tbody>
-            <tr>${cells}</tr>
+            <tr><th>名前</th>${nameCells}</tr>
+            <tr><th>チーム</th>${teamCells}</tr>
+            <tr><th>素点</th>${sotenCells}</tr>
+            <tr><th>Pt</th>${pointCells}</tr>
           </tbody>
         </table>
       </div>
