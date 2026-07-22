@@ -378,25 +378,32 @@ table.data-table.sticky-head thead th.col-name {
   }
   table.match-table td { padding: 3px 2px; }
 
-  /* 個人成績ランキングだけは、幅が狭くてもカード化せずPC同様の表形式のまま保つ */
-  table.data-table.ranking-table {
+  /* 個人成績ランキング・大会詳細の順位表は、幅が狭くてもカード化せずPC同様の表形式のまま保つ */
+  table.data-table.ranking-table,
+  table.data-table.standings-table {
     display: table;
     font-size: 0.7rem;
   }
-  table.data-table.ranking-table thead { display: table-header-group; }
-  table.data-table.ranking-table tbody { display: table-row-group; }
-  table.data-table.ranking-table tr {
+  table.data-table.ranking-table thead,
+  table.data-table.standings-table thead { display: table-header-group; }
+  table.data-table.ranking-table tbody,
+  table.data-table.standings-table tbody { display: table-row-group; }
+  table.data-table.ranking-table tr,
+  table.data-table.standings-table tr {
     display: table-row;
     border-bottom: none;
     padding: 0;
   }
   table.data-table.ranking-table th,
-  table.data-table.ranking-table td {
+  table.data-table.ranking-table td,
+  table.data-table.standings-table th,
+  table.data-table.standings-table td {
     display: table-cell;
     padding: 5px 6px;
     border-bottom: 1px solid var(--border);
   }
-  table.data-table.ranking-table td::before { content: none; }
+  table.data-table.ranking-table td::before,
+  table.data-table.standings-table td::before { content: none; }
 }
 
 /* ---------- loading / error ---------- */
