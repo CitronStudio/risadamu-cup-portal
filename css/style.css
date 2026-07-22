@@ -330,7 +330,8 @@ table.data-table.sticky-head thead th.col-name {
 
 .ranking-table .cell-name,
 .ranking-table .cell-total,
-.ranking-table .cell-matches {
+.ranking-table .cell-matches,
+.standings-table .cell-name {
   font-weight: 700;
 }
 
@@ -339,6 +340,12 @@ table.data-table.sticky-head thead th.col-name {
 
 .positive { color: var(--positive); }
 .negative { color: var(--negative); }
+
+/* 大会詳細のチーム順位・個人順位は運営スプレッドシートの配色（プラス=青、マイナス=▲付き赤）に合わせる */
+.sheet-pos { color: var(--accent); }
+.sheet-neg { color: var(--negative); }
+.cell-diff { color: var(--text-muted); }
+.rank-circle { color: var(--text-muted); font-size: 0.78em; }
 
 .empty-msg, .hint-msg {
   color: var(--text-muted);

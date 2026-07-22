@@ -35,6 +35,22 @@ function fmtNumber(n) {
   return String(Number(n));
 }
 
+const CIRCLED_RANK = ['', '①', '②', '③', '④'];
+
+// 運営スプレッドシートと同じ表記（プラスは青、マイナスは▲付き赤）で得点を表示する。
+function fmtSheetPoint(n) {
+  const v = Number(n);
+  if (Number.isNaN(v)) return '-';
+  return v >= 0
+    ? `<span class="sheet-pos">${v.toFixed(1)}</span>`
+    : `<span class="sheet-neg">▲${Math.abs(v).toFixed(1)}</span>`;
+}
+
+function fmtDiff(n) {
+  if (n == null) return '-';
+  return Number(n).toFixed(1);
+}
+
 // ---------- ページ: 大会一覧 ----------
 function renderTournamentList(data) {
   const rows = data.tournaments
@@ -185,6 +201,85 @@ function renderH2H(data, selectedName) {
     </section>`;
 }
 
+// ---------- 大会詳細: チーム順位 ----------
+function renderTeamStandings(teamStandings, teamNames) {
+  const rows = teamStandings
+    .map(
+      (t) => `
+    <tr>
+      <td data-label="順位" class="col-rank">${t.rank}</td>
+      <td data-label="チーム" class="cell-name">${teamBadge(t.teamCode, teamNames)} <span class="meta-strong">${escapeHtml(teamNames.get(t.teamCode) || t.teamCode)}</span></td>
+      <td data-label="合計">${fmtSheetPoint(t.total)}</td>
+      <td data-label="差" class="cell-diff">${fmtDiff(t.diff)}</td>
+      <td data-label="1着">${t.rankCounts[1]}</td>
+      <td data-label="2着">${t.rankCounts[2]}</td>
+      <td data-label="3着">${t.rankCounts[3]}</td>
+      <td data-label="4着">${t.rankCounts[4]}</td>
+    </tr>`
+    )
+    .join('');
+
+  return `
+    <div class="table-wrap">
+      <table class="data-table standings-table">
+        <thead>
+          <tr>
+            <th class="col-rank">順位</th><th>チーム</th><th>合計</th><th>差</th>
+            <th>1着</th><th>2着</th><th>3着</th><th>4着</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ---------- 大会詳細: 個人順位 ----------
+function renderIndividualStandings(individualStandings, matchOrdinals, teamNames) {
+  const matchHeaders = matchOrdinals.map((no) => `<th>${no}</th>`).join('');
+
+  const rows = individualStandings
+    .map((p) => {
+      const matchCells = matchOrdinals
+        .map((no) => {
+          const m = p.byMatch.get(no);
+          if (!m) return `<td data-label="第${no}試合" class="cell-tournament cell-muted">-</td>`;
+          const circle = CIRCLED_RANK[m.rank] || '';
+          return `<td data-label="第${no}試合" class="cell-tournament">${fmtSheetPoint(m.point)} <span class="rank-circle">${circle}</span></td>`;
+        })
+        .join('');
+
+      return `
+    <tr>
+      <td data-label="順位" class="col-rank">${p.rank}</td>
+      <td data-label="名前" class="cell-name col-name">${escapeHtml(p.name)}</td>
+      <td data-label="チーム">${teamBadge(p.teamCode, teamNames)}</td>
+      <td data-label="総得点">${fmtSheetPoint(p.total)}</td>
+      <td data-label="差" class="cell-diff">${fmtDiff(p.diff)}</td>
+      ${matchCells}
+      <td data-label="1着">${p.rankCounts[1]}</td>
+      <td data-label="2着">${p.rankCounts[2]}</td>
+      <td data-label="3着">${p.rankCounts[3]}</td>
+      <td data-label="4着">${p.rankCounts[4]}</td>
+      <td data-label="最大点">${fmtNumber(p.maxSoten)}</td>
+    </tr>`;
+    })
+    .join('');
+
+  return `
+    <div class="table-wrap scroll-box">
+      <table class="data-table standings-table sticky-head">
+        <thead>
+          <tr>
+            <th class="col-rank">順位</th><th class="col-name">名前</th><th>チーム</th><th>総得点</th><th>差</th>
+            ${matchHeaders}
+            <th>1着</th><th>2着</th><th>3着</th><th>4着</th><th>最大点</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
 // ---------- ページ: 大会詳細 ----------
 function renderTournamentDetail(data, no) {
   const t = data.tournaments.find((x) => x.no === no);
@@ -192,6 +287,7 @@ function renderTournamentDetail(data, no) {
     return `<section><p class="empty-msg">大会が見つかりません。</p><a class="back-link" href="#/">← 大会一覧に戻る</a></section>`;
   }
   const matches = data.matchesByTournament.get(no) || [];
+  const { teamStandings, individualStandings, matchOrdinals } = computeTournamentStandings(data.results, no);
 
   const matchesHtml = matches
     .map(
@@ -230,7 +326,14 @@ function renderTournamentDetail(data, no) {
         <div>個人優勝: ${escapeHtml(t.individualChampion || '-')} ${teamBadge(t.individualChampionTeam, data.teamNames)}</div>
         ${t.note ? `<div>備考: ${escapeHtml(t.note)}</div>` : ''}
       </div>
-      <h2 class="section-title">対局結果（全${matches.length}試合）</h2>
+
+      <h2 class="section-title">チーム順位</h2>
+      ${teamStandings.length ? renderTeamStandings(teamStandings, data.teamNames) : '<p class="empty-msg">データがありません。</p>'}
+
+      <h2 class="section-title">個人順位</h2>
+      ${individualStandings.length ? renderIndividualStandings(individualStandings, matchOrdinals, data.teamNames) : '<p class="empty-msg">データがありません。</p>'}
+
+      <h2 class="section-title">各卓の詳細（全${matches.length}試合）</h2>
       <div class="card-list">${matchesHtml || '<p class="empty-msg">対局データがありません。</p>'}</div>
     </section>`;
 }
