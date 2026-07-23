@@ -242,12 +242,6 @@ table.data-table.match-table tbody th {
   vertical-align: middle;
 }
 
-.badge-DM { background: #d2725f; }
-.badge-RI { background: #1f355d; }
-.badge-YU { background: #b19343; }
-.badge-CI { background: #517335; }
-.badge-YS { background: #905675; }
-.badge-NO { background: #6082e1; }
 
 /* ---------- search / select ---------- */
 .search-box {

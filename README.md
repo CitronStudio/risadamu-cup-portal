@@ -17,7 +17,7 @@
 ```
 index.html          エントリーポイント（ヘッダー・下部ナビ・スクリプト読み込み）
 css/style.css        スタイル一式（モバイルファースト、ダークモード対応）
-js/config.js          スプレッドシートIDとシートgidの設定
+js/config.js          スプレッドシートID・シートgid・大会名・チーム色の設定（別大会への流用時はここを編集）
 js/gviz.js            スプレッドシート取得レイヤー（JSONP方式、CORS制限を受けない）
 js/data.js             データ正規化・集計ロジック（ランキング・対戦成績の計算はここ）
 js/app.js              ハッシュルーティングと画面描画
@@ -45,3 +45,29 @@ python -m http.server 8000
 このフォルダ一式をGitHubリポジトリにpushし、リポジトリの Settings → Pages で
 「Deploy from a branch」→ ブランチ `main` / フォルダ `/ (root)` を選ぶだけで公開できる
 （ビルド工程が無いため、リポジトリのファイルがそのまま配信される）。
+
+## 別の大会に流用する
+
+このサイトは1つの大会シリーズ専用に作っているが、同じ形式のスプレッドシート運用であれば
+以下を書き換えるだけで別の大会にも流用できる。
+
+1. **`js/config.js`**
+   - `SHEET_ID` / `GID` を新しい大会のスプレッドシートに差し替える
+     （Info/Team/Resultの各タブを開いてURLの`gid=`を確認する）
+   - `SITE_NAME` を新しい大会名に変更（ページ本文中の文言に使われる）
+   - `TEAM_COLORS` を新しいチーム構成に合わせて変更・追加
+     （未登録のチームコードは`DEFAULT_TEAM_COLOR`のグレーで表示される。
+     CSSの編集は不要）
+2. **`index.html`冒頭のコメントで示している3箇所**（`<title>` / `<meta name="description">` / `<h1>`）
+   - SEO・リンクプレビュー用に静的HTMLとして直接書いているため、ここだけは
+     `config.js`に一元化せず手動で編集する必要がある
+
+上記以外（`js/app.js`・`js/data.js`・`css/style.css`）は編集不要のはず。
+ただし運営スプレッドシートの列名がこのシリーズと異なる場合
+（例: Result シートの列名が「素点」ではなく別名など）は、
+`js/data.js`の`normalizeInfo`・`normalizeTeam`・`normalizeResults`内で
+参照している列名を実際のシートに合わせて直す必要がある。
+
+なお、GitHubの「Template repository」機能（Settings → General → Template repository）を
+有効にしておくと、次回以降は「Use this template」ボタンから新しいリポジトリとして
+このサイト一式をワンクリックで複製できる。

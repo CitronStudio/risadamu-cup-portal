@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="ja">
 <head>
+<!--
+  別の大会用にこのサイトを流用する場合、書き換えが必要なのは主に2箇所:
+    1. js/config.js（スプレッドシートID・シートgid・大会名・チーム色）
+    2. この下のtitle / meta description / h1（SEO・リンクプレビュー用なので静的HTMLのまま置いている）
+  それ以外（js/app.js, css/style.css等）は基本編集不要。
+-->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>History of りさだむ杯</title>
@@ -19,6 +25,7 @@
 </head>
 <body>
 <header class="top-bar">
+  <!-- ヘッダーの見出し。上のtitle/meta descriptionと合わせて書き換える -->
   <h1>History of りさだむ杯</h1>
   <button id="theme-toggle" class="theme-toggle" type="button" aria-label="ダークモード切り替え"></button>
 </header>

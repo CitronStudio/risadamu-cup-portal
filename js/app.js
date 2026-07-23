@@ -18,7 +18,8 @@ function escapeHtml(s) {
 function teamBadge(code, teamNames) {
   if (!code) return '';
   const name = teamNames.get(code) || code;
-  return `<span class="badge badge-team badge-${escapeHtml(code)}" title="${escapeHtml(name)}">${escapeHtml(code)}</span>`;
+  const color = CONFIG.TEAM_COLORS[code] || CONFIG.DEFAULT_TEAM_COLOR;
+  return `<span class="badge badge-team" style="background:${color}" title="${escapeHtml(name)}">${escapeHtml(code)}</span>`;
 }
 
 function fmtSigned(n) {
@@ -79,7 +80,7 @@ function renderTournamentList(data) {
   return `
     <section>
       <h1 class="page-title">大会一覧</h1>
-      <p class="page-desc">りさだむ杯の歴代大会。タップすると各大会の対局結果を見られます。</p>
+      <p class="page-desc">${escapeHtml(CONFIG.SITE_NAME)}の歴代大会。タップすると各大会の対局結果を見られます。</p>
       <div class="card-list">${rows}</div>
     </section>`;
 }
@@ -164,7 +165,7 @@ function renderRanking(data, query = '') {
   return `
     <section>
       <h1 class="page-title">個人成績ランキング</h1>
-      <p class="page-desc">全大会・全試合の合計ポイント順（りさだむ杯のRESULTシートより自動集計）。列名タップで並び替え、右へスクロールすると大会ごとの得点・所属チームも見られます。</p>
+      <p class="page-desc">全大会・全試合の合計ポイント順（${escapeHtml(CONFIG.SITE_NAME)}のRESULTシートより自動集計）。列名タップで並び替え、右へスクロールすると大会ごとの得点・所属チームも見られます。</p>
       <input
         id="ranking-search"
         class="search-box"
