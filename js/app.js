@@ -4,6 +4,7 @@ const state = {
   data: null,
   loadError: null,
   h2hSort: { key: 'games', dir: 'desc' },
+  rankingSort: { key: 'totalPoint', dir: 'desc' },
 };
 
 const $app = () => document.getElementById('app');
@@ -84,6 +85,31 @@ function renderTournamentList(data) {
 }
 
 // ---------- ページ: 個人成績ランキング ----------
+const RANKING_SORT_COLUMNS = [
+  { key: 'rank', label: '順位', defaultDir: 'asc', get: (p) => p.rank, headClass: 'col-rank' },
+  { key: 'name', label: '名前', defaultDir: 'asc', get: (p) => p.name, isString: true, headClass: 'col-name' },
+  { key: 'totalPoint', label: '総得点', defaultDir: 'desc', get: (p) => p.totalPoint },
+  { key: 'matches', label: '試合数', defaultDir: 'desc', get: (p) => p.matches },
+  { key: 'rank1', label: '1着', defaultDir: 'desc', get: (p) => p.rankCounts[1] },
+  { key: 'rank2', label: '2着', defaultDir: 'desc', get: (p) => p.rankCounts[2] },
+  { key: 'rank3', label: '3着', defaultDir: 'desc', get: (p) => p.rankCounts[3] },
+  { key: 'rank4', label: '4着', defaultDir: 'desc', get: (p) => p.rankCounts[4] },
+  { key: 'avoid4Rate', label: '4着回避率', defaultDir: 'desc', get: (p) => p.avoid4Rate },
+  { key: 'maxSoten', label: '最高得点', defaultDir: 'desc', get: (p) => p.maxSoten },
+];
+
+function sortRankingList(list, sort) {
+  const col = RANKING_SORT_COLUMNS.find((c) => c.key === sort.key);
+  if (!col) return list;
+  const sorted = list.slice().sort((a, b) => {
+    const va = col.get(a);
+    const vb = col.get(b);
+    const cmp = col.isString ? String(va).localeCompare(String(vb), 'ja') : (va ?? -Infinity) - (vb ?? -Infinity);
+    return sort.dir === 'asc' ? cmp : -cmp;
+  });
+  return sorted;
+}
+
 function renderRankingRow(p, tournamentNos, teamNames) {
   const perTournamentCells = tournamentNos
     .map((no) => {
@@ -112,20 +138,33 @@ function renderRankingRow(p, tournamentNos, teamNames) {
     </tr>`;
 }
 
-function renderRanking(data, query = '') {
-  const q = query.trim();
-  const list = q
-    ? data.career.filter((p) => p.name.includes(q))
-    : data.career;
+function renderRankingHeader() {
+  return RANKING_SORT_COLUMNS.map((col) => {
+    const active = state.rankingSort.key === col.key;
+    const arrow = active ? (state.rankingSort.dir === 'asc' ? ' ▲' : ' ▼') : '';
+    const classes = ['sortable-th', col.headClass, active ? 'active' : ''].filter(Boolean).join(' ');
+    return `<th class="${classes}" data-sort="${col.key}">${col.label}${arrow}</th>`;
+  }).join('');
+}
 
+function renderRankingBody(data, query) {
+  const q = query.trim();
+  const filtered = q ? data.career.filter((p) => p.name.includes(q)) : data.career;
+  const list = sortRankingList(filtered, state.rankingSort);
   const tournamentNos = data.tournaments.map((t) => t.no);
   const rowsHtml = list.map((p) => renderRankingRow(p, tournamentNos, data.teamNames)).join('');
+  return { rowsHtml, isEmpty: list.length === 0 };
+}
+
+function renderRanking(data, query = '') {
+  const tournamentNos = data.tournaments.map((t) => t.no);
   const tournamentHeaders = tournamentNos.map((no) => `<th>第${no}回</th>`).join('');
+  const { rowsHtml, isEmpty } = renderRankingBody(data, query);
 
   return `
     <section>
       <h1 class="page-title">個人成績ランキング</h1>
-      <p class="page-desc">全大会・全試合の合計ポイント順（りさだむ杯のRESULTシートより自動集計）。右へスクロールすると大会ごとの得点・所属チームも見られます。</p>
+      <p class="page-desc">全大会・全試合の合計ポイント順（りさだむ杯のRESULTシートより自動集計）。列名タップで並び替え、右へスクロールすると大会ごとの得点・所属チームも見られます。</p>
       <input
         id="ranking-search"
         class="search-box"
@@ -137,15 +176,14 @@ function renderRanking(data, query = '') {
       <div class="table-wrap scroll-box">
         <table class="data-table ranking-table keep-table sticky-head">
           <thead>
-            <tr>
-              <th class="col-rank">順位</th><th class="col-name">名前</th><th>総得点</th><th>試合数</th>
-              <th>1着</th><th>2着</th><th>3着</th><th>4着</th><th>4着回避率</th><th>最高得点</th>
+            <tr id="ranking-thead-row">
+              ${renderRankingHeader()}
               ${tournamentHeaders}
             </tr>
           </thead>
           <tbody id="ranking-tbody">${rowsHtml}</tbody>
         </table>
-        ${list.length === 0 ? '<p class="empty-msg">該当する選手が見つかりません。</p>' : ''}
+        <p id="ranking-empty-msg" class="empty-msg" ${isEmpty ? '' : 'hidden'}>該当する選手が見つかりません。</p>
       </div>
     </section>`;
 }
@@ -413,16 +451,27 @@ function render() {
   setActiveNav(route.page === 'tournament' ? 'home' : route.page);
 
   if (route.page === 'ranking') {
+    state.rankingSort = { key: 'totalPoint', dir: 'desc' };
     $app().innerHTML = renderRanking(state.data);
-    document.getElementById('ranking-search').addEventListener('input', (e) => {
-      const tournamentNos = state.data.tournaments.map((t) => t.no);
-      document.getElementById('ranking-tbody').innerHTML = (
-        e.target.value.trim()
-          ? state.data.career.filter((p) => p.name.includes(e.target.value.trim()))
-          : state.data.career
-      )
-        .map((p) => renderRankingRow(p, tournamentNos, state.data.teamNames))
-        .join('');
+    const updateRankingBody = () => {
+      const { rowsHtml, isEmpty } = renderRankingBody(state.data, document.getElementById('ranking-search').value);
+      document.getElementById('ranking-tbody').innerHTML = rowsHtml;
+      document.getElementById('ranking-empty-msg').hidden = !isEmpty;
+    };
+    document.getElementById('ranking-search').addEventListener('input', updateRankingBody);
+    document.getElementById('ranking-thead-row').addEventListener('click', (e) => {
+      const th = e.target.closest('th[data-sort]');
+      if (!th) return;
+      const key = th.dataset.sort;
+      if (state.rankingSort.key === key) {
+        state.rankingSort.dir = state.rankingSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        const col = RANKING_SORT_COLUMNS.find((c) => c.key === key);
+        state.rankingSort = { key, dir: col.defaultDir };
+      }
+      document.getElementById('ranking-thead-row').innerHTML =
+        renderRankingHeader() + state.data.tournaments.map((t) => `<th>第${t.no}回</th>`).join('');
+      updateRankingBody();
     });
     document.getElementById('ranking-search').focus({ preventScroll: true });
   } else if (route.page === 'live') {
