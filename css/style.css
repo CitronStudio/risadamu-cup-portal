@@ -313,6 +313,11 @@ table.data-table td.cell-name {
   white-space: nowrap;
 }
 
+/* 対戦成績は順位列がなく「相手」が先頭列になるため、そちらも左詰めにする */
+table.data-table.h2h-table thead th:first-child {
+  text-align: left;
+}
+
 table.data-table thead th {
   background: rgba(59, 91, 219, 0.08);
   color: var(--text-muted);
