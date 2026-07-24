@@ -13,10 +13,12 @@ const $app = () => document.getElementById('app');
 // CSSのvh基準の高さ計算(min(70vh, calc(100vh - 260px)))が実際の余白とズレて
 // 表の内側スクロール領域が下部ナビの裏に隠れてしまうことがある。
 // 実測した位置を元にJSでmax-heightを補正して、常に画面内に収まるようにする。
+// 対象は個人成績ランキング(.scroll-box-dynamic)のみ。大会詳細の個人順位は
+// なるべく多くの選手を一覧できるよう、この補正を使わない従来のCSS依存のままにしている。
 function fitScrollBoxes() {
   const nav = document.querySelector('.bottom-nav');
   const navHeight = nav ? nav.getBoundingClientRect().height : 0;
-  document.querySelectorAll('.scroll-box').forEach((box) => {
+  document.querySelectorAll('.scroll-box-dynamic').forEach((box) => {
     const top = box.getBoundingClientRect().top;
     const available = window.innerHeight - top - navHeight - 12;
     box.style.maxHeight = `${Math.max(available, 240)}px`;
@@ -188,7 +190,7 @@ function renderRanking(data, query = '') {
         value="${escapeHtml(query)}"
         autocomplete="off"
       />
-      <div class="table-wrap scroll-box">
+      <div class="table-wrap scroll-box scroll-box-dynamic">
         <table class="data-table ranking-table keep-table sticky-head">
           <thead>
             <tr id="ranking-thead-row">
