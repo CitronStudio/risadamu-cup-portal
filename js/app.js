@@ -9,6 +9,20 @@ const state = {
 
 const $app = () => document.getElementById('app');
 
+// ホーム画面追加（standalone表示）ではSafariのアドレスバー等が無くなり、
+// CSSのvh基準の高さ計算(min(70vh, calc(100vh - 260px)))が実際の余白とズレて
+// 表の内側スクロール領域が下部ナビの裏に隠れてしまうことがある。
+// 実測した位置を元にJSでmax-heightを補正して、常に画面内に収まるようにする。
+function fitScrollBoxes() {
+  const nav = document.querySelector('.bottom-nav');
+  const navHeight = nav ? nav.getBoundingClientRect().height : 0;
+  document.querySelectorAll('.scroll-box').forEach((box) => {
+    const top = box.getBoundingClientRect().top;
+    const available = window.innerHeight - top - navHeight - 12;
+    box.style.maxHeight = `${Math.max(available, 240)}px`;
+  });
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -503,10 +517,16 @@ function render() {
   }
 
   window.scrollTo(0, 0);
+  fitScrollBoxes();
+  requestAnimationFrame(fitScrollBoxes);
 }
 
 async function init() {
   window.addEventListener('hashchange', render);
+  window.addEventListener('resize', fitScrollBoxes);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', fitScrollBoxes);
+  }
   render();
   try {
     state.data = await loadAllData();
