@@ -39,6 +39,25 @@ function normalizeTeam(rawRows) {
   return map;
 }
 
+// チョンボ回数を「大会番号 + チームコード」ごとに合計する。
+// 減点はチーム得点にのみ効き、個人得点には影響しない（大会運営のルール）。
+function normalizeDeductions(rawRows) {
+  const map = new Map();
+  for (const r of rawRows) {
+    const tournamentNo = r['大会'] != null ? Number(r['大会']) : null;
+    const teamCode = r['チーム'] || '';
+    const chombo = r['チョンボ'] != null ? Number(r['チョンボ']) : 0;
+    if (tournamentNo == null || Number.isNaN(tournamentNo) || !teamCode || !chombo) continue;
+    const k = deductionKey(tournamentNo, teamCode);
+    map.set(k, (map.get(k) || 0) + chombo);
+  }
+  return map;
+}
+
+function deductionKey(tournamentNo, teamCode) {
+  return `${tournamentNo}:${teamCode}`;
+}
+
 function normalizeResults(rawRows) {
   return rawRows
     .filter((r) => r['名前'])
@@ -175,7 +194,7 @@ function groupMatchesByTournament(results) {
 // 大会内の「チーム順位」「個人順位」を、運営スプレッドシートと同じ形式（合計/上位との差/着順回数）で集計する。
 // 個人順位の試合列は、卓ごとに割り振られる大会内の物理的な試合番号ではなく、
 // 各選手が「その日何試合目を打ったか」という個人ごとの通し番号（1,2,3...）で並べる。
-function computeTournamentStandings(results, tournamentNo) {
+function computeTournamentStandings(results, tournamentNo, deductions = new Map()) {
   const rows = results.filter((r) => r.tournamentNo === tournamentNo);
 
   const byPlayer = new Map();
@@ -229,7 +248,15 @@ function computeTournamentStandings(results, tournamentNo) {
     t.total += r.point;
     if (r.rank >= 1 && r.rank <= 4) t.rankCounts[r.rank] += 1;
   }
-  const teamStandings = Array.from(byTeam.values()).map((t) => ({ ...t, total: round1(t.total) }));
+  // チョンボ分をチーム得点から引いてから順位づけする（減点で順位が入れ替わることがあるため）。
+  const teamStandings = Array.from(byTeam.values()).map((t) => {
+    const chombo = deductions.get(deductionKey(tournamentNo, t.teamCode)) || 0;
+    return {
+      ...t,
+      chombo,
+      total: round1(t.total - chombo * CONFIG.CHOMBO_PENALTY),
+    };
+  });
   teamStandings.sort((a, b) => b.total - a.total);
   teamStandings.forEach((t, i) => {
     t.rank = i + 1;
@@ -240,15 +267,18 @@ function computeTournamentStandings(results, tournamentNo) {
 }
 
 async function loadAllData() {
-  const [infoRaw, teamRaw, resultRaw] = await Promise.all([
+  const [infoRaw, teamRaw, resultRaw, deductionRaw] = await Promise.all([
     loadSheetAsObjects(CONFIG.SHEET_ID, CONFIG.GID.info, ['日時']),
     loadSheetAsObjects(CONFIG.SHEET_ID, CONFIG.GID.team),
     loadSheetAsObjects(CONFIG.SHEET_ID, CONFIG.GID.result),
+    // 減点シートはまだ用意されていない場合があるため、失敗しても全体を止めない。
+    loadSheetAsObjects(CONFIG.SHEET_ID, { sheet: CONFIG.DEDUCTION_SHEET_NAME }).catch(() => []),
   ]);
 
   const tournaments = normalizeInfo(infoRaw);
   const teamNames = normalizeTeam(teamRaw);
   const results = normalizeResults(resultRaw);
+  const deductions = normalizeDeductions(deductionRaw);
   const career = computeCareerStats(results);
   const h2h = computeHeadToHead(results);
   const matchesByTournament = groupMatchesByTournament(results);
@@ -258,6 +288,7 @@ async function loadAllData() {
     tournaments,
     teamNames,
     results,
+    deductions,
     career,
     h2h,
     matchesByTournament,

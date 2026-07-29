@@ -4,7 +4,16 @@
 
 let gvizCallbackSeq = 0;
 
-function fetchGvizTable(sheetId, gid) {
+// selectorはgid番号でも { sheet: 'シート名' } でも指定できる。
+// シート名指定は、まだ作っていないシート（gidが分からない）を参照したいときに使う。
+function gvizSelectorParam(selector) {
+  if (selector != null && typeof selector === 'object' && selector.sheet != null) {
+    return `&sheet=${encodeURIComponent(selector.sheet)}`;
+  }
+  return `&gid=${selector}`;
+}
+
+function fetchGvizTable(sheetId, selector) {
   return new Promise((resolve, reject) => {
     const cbName = `__gviz_cb_${Date.now()}_${gvizCallbackSeq++}`;
     const script = document.createElement('script');
@@ -32,7 +41,7 @@ function fetchGvizTable(sheetId, gid) {
 
     const url =
       `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq` +
-      `?tqx=out:json;responseHandler:${cbName}&gid=${gid}`;
+      `?tqx=out:json;responseHandler:${cbName}${gvizSelectorParam(selector)}`;
     script.src = url;
     script.onerror = () => {
       cleanup();
@@ -71,8 +80,8 @@ function simplifyRows(rows, dateFields = []) {
   });
 }
 
-async function loadSheetAsObjects(sheetId, gid, dateFields = []) {
-  const table = await fetchGvizTable(sheetId, gid);
+async function loadSheetAsObjects(sheetId, selector, dateFields = []) {
+  const table = await fetchGvizTable(sheetId, selector);
   const rows = gvizTableToRows(table);
   return simplifyRows(rows, dateFields);
 }

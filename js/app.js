@@ -302,6 +302,8 @@ function renderTeamStandings(teamStandings, teamNames) {
     )
     .join('');
 
+  const totalChombo = teamStandings.reduce((sum, t) => sum + (t.chombo || 0), 0);
+
   return `
     <div class="table-wrap">
       <table class="data-table standings-table keep-table">
@@ -313,7 +315,8 @@ function renderTeamStandings(teamStandings, teamNames) {
         </thead>
         <tbody>${rows}</tbody>
       </table>
-    </div>`;
+    </div>
+    ${totalChombo > 0 ? '<p class="hint-msg">※チョンボの減点は合計に反映済みです。</p>' : ''}`;
 }
 
 // ---------- 大会詳細: 個人順位 ----------
@@ -370,7 +373,11 @@ function renderTournamentDetail(data, no) {
     return `<section><p class="empty-msg">大会が見つかりません。</p><a class="back-link" href="#/">← 大会一覧に戻る</a></section>`;
   }
   const matches = data.matchesByTournament.get(no) || [];
-  const { teamStandings, individualStandings, matchOrdinals } = computeTournamentStandings(data.results, no);
+  const { teamStandings, individualStandings, matchOrdinals } = computeTournamentStandings(
+    data.results,
+    no,
+    data.deductions
+  );
 
   const matchesHtml = matches
     .map((m) => {
