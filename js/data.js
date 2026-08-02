@@ -112,6 +112,9 @@ function computeCareerStats(results) {
     minPoint: round1(p.minPoint),
     maxSoten: p.maxSoten === -Infinity ? null : Math.round(p.maxSoten * 100),
     rankCounts: p.rankCounts,
+    avgRank: p.matches
+      ? (p.rankCounts[1] * 1 + p.rankCounts[2] * 2 + p.rankCounts[3] * 3 + p.rankCounts[4] * 4) / p.matches
+      : 0,
     avoid4Rate: p.matches ? 1 - p.rankCounts[4] / p.matches : 0,
     tournamentsCount: p.tournaments.size,
     tournaments: Array.from(p.tournaments).sort((a, b) => a - b),

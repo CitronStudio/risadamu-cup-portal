@@ -49,6 +49,10 @@ function fmtPercent(rate) {
   return `${(rate * 100).toFixed(1)}%`;
 }
 
+function fmtAvgRank(n) {
+  return Number(n).toFixed(2);
+}
+
 function fmtNumber(n) {
   if (n == null || Number.isNaN(Number(n))) return '-';
   return String(Number(n));
@@ -111,6 +115,7 @@ const RANKING_SORT_COLUMNS = [
   { key: 'rank2', label: '2着', defaultDir: 'desc', get: (p) => p.rankCounts[2] },
   { key: 'rank3', label: '3着', defaultDir: 'desc', get: (p) => p.rankCounts[3] },
   { key: 'rank4', label: '4着', defaultDir: 'desc', get: (p) => p.rankCounts[4] },
+  { key: 'avgRank', label: '平均着順', defaultDir: 'asc', get: (p) => p.avgRank },
   { key: 'avoid4Rate', label: '4着回避率', defaultDir: 'desc', get: (p) => p.avoid4Rate },
   { key: 'maxSoten', label: '最高得点', defaultDir: 'desc', get: (p) => p.maxSoten },
 ];
@@ -149,6 +154,7 @@ function renderRankingRow(p, tournamentNos, teamNames) {
       <td data-label="2着">${p.rankCounts[2]}</td>
       <td data-label="3着">${p.rankCounts[3]}</td>
       <td data-label="4着">${p.rankCounts[4]}</td>
+      <td data-label="平均着順">${fmtAvgRank(p.avgRank)}</td>
       <td data-label="4着回避率">${fmtPercent(p.avoid4Rate)}</td>
       <td data-label="最高得点">${fmtNumber(p.maxSoten)}</td>
       ${perTournamentCells}
